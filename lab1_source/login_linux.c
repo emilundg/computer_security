@@ -46,13 +46,12 @@ int main(int argc, char *argv[]) {
 		fflush(NULL); /* Flush all  output buffers */
 		__fpurge(stdin); /* Purge any data in stdin buffer */
 
+		
 		if (fgets(user, LENGTH, stdin) == NULL) /* gets() is vulnerable to buffer */
 			exit(0); /*  overflow attacks.  */
-        
-        /*replace last character with \0*/
-        user[strlen(user) - 1] = '0';
-        printf("UserName %s", user);
 
+		/* remove the \n sign and replace it with \0*/
+		strtok(user, "\n");
 		/* check to see if important variable is intact after input of login name - do not remove */
 		printf("Value of variable 'important' after input of login name: %*.*s\n",
 				LENGTH - 1, LENGTH - 1, important);
@@ -70,7 +69,9 @@ int main(int argc, char *argv[]) {
 
 			}
 		}
-		printf("Login Incorrect \n");
+		else {
+			printf("Login Incorrect \n");
+		}
 	}
 	return 0;
 }
