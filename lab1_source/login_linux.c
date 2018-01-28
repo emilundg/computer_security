@@ -17,7 +17,8 @@
 #define FALSE 0
 #define LENGTH 16
 #define LINE_BUFFER_LENGTH 1000
-#define MAX_PASSWORD_AGE 10
+#define MAX_PASSWORD_AGE 3 
+#define MAX_PASSWORDLENGTH 100
 
 void sighandler() {
 
@@ -61,40 +62,41 @@ int main(int argc, char *argv[]) {
 		user_pass = getpass(prompt);
 		passwddata = mygetpwnam(user);
 		if (passwddata != NULL) {
-			/* You have to encrypt user_pass for this to work */
-			/* Don't forget to include the salt */
-			if (!strcmp(user_pass, passwddata->passwd)) {
-				printf(" You're in ! (after %d failed attempts...\n",
+	          /* You have to encrypt user_pass for this to work */
+		  /* Don't forget to include the salt */
+		  if (!strncmp(user_pass, passwddata->passwd, MAX_PASSWORDLENGTH)) {
+		    printf(" You're in ! (after %d failed attempts...\n",
                     passwddata->pwfailed);
-                /* Reset failed attemps to 0 */
-                passwddata->pwfailed = 0;
-                /* Check and increase password age */
-                passwddata->pwage += 1;
-                /* Update passdb */
-                mysetpwent(user, passwddata);
-                /* If password is too old, prompt user to change it */
-                if (passwddata->pwage > MAX_PASSWORD_AGE) {
-                    char *new_pass1 = "1";
-                    char *new_pass2 = "2";
-                    while (new_pass1 != new_pass2) {
+                    /* Reset failed attemps to 0 */
+                    passwddata->pwfailed = 0;
+                    /* Check and increase password age */
+                    passwddata->pwage += 1;
+                    /* Update passdb */
+                    mysetpwent(user, passwddata);
+                    /* If password is too old, prompt user to change it */
+                    if (passwddata->pwage > MAX_PASSWORD_AGE) {
+                      char *new_pass1 = "1";
+                      char *new_pass2 = "2";
+                      while (!strncmp(new_pass1, new_pass2, MAX_PASSWORDLENGTH)) {
                         new_pass1 = getpass("You password is too old.\n Please set at new password: ");
                         new_pass2 = getpass("Please reenter new password: ");
-                   }
-                   printf("Successfully changed password\n");
-                   passwddata->pwage = 0;
-                   mysetpwent(user, passwddata);
-                }
-            }
-            else {
-                /* Increment number of failed attemps */
-                passwddata->pwfailed += 1;
-                mysetpwent(user, passwddata);
-            }
-				/*  check UID, see setuid(2) */
-				/*  start a shell, use execve(2) */
+                      }
+                      printf("Successfully changed password\n");
+                      passwddata->pwage = 0;
+		      passwddata->passwd = new_pass1;
+                      mysetpwent(user, passwddata);
+                    }
+                 }
+                 else {
+                  /* Increment number of failed attemps */
+                  passwddata->pwfailed += 1;
+                  mysetpwent(user, passwddata);
+                 }
+		/*  check UID, see setuid(2) */
+		/*  start a shell, use execve(2) */
 		}
 		else {
-			printf("Login Incorrect \n");
+	          printf("Login Incorrect \n");
 		}
 	}
 	return 0;
