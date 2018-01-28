@@ -77,10 +77,17 @@ int main(int argc, char *argv[]) {
                     if (passwddata->pwage > MAX_PASSWORD_AGE) {
                       char *new_pass1 = "1";
                       char *new_pass2 = "2";
-                      while (!strncmp(new_pass1, new_pass2, MAX_PASSWORDLENGTH)) {
-                        new_pass1 = getpass("You password is too old.\n Please set at new password: ");
-                        new_pass2 = getpass("Please reenter new password: ");
-                      }
+		      char pass1cpy[100];
+		      while(1) {
+			// if not same password, prompt user again
+			if (strncmp(pass1cpy, new_pass2, MAX_PASSWORDLENGTH != 0)) {	
+                          new_pass1 = getpass("You password is too old.\n Please set at new password: ");
+		          strncpy(pass1cpy, new_pass1, sizeof(new_pass1));
+                          new_pass2 = getpass("Please reenter new password: ");
+			} else {
+			  break;
+			}
+		      }
                       printf("Successfully changed password\n");
                       passwddata->pwage = 0;
 		      passwddata->passwd = new_pass1;
