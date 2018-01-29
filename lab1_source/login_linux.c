@@ -12,6 +12,7 @@
 #include <sys/types.h>
 #include <crypt.h>
 #include "pwent.h"
+#include <unistd.h>
 
 #define TRUE 1
 #define FALSE 0
@@ -20,10 +21,15 @@
 #define MAX_PASSWORD_AGE 3 
 #define MAX_PASSWORDLENGTH 100
 
+void signalIgnoreHandler() {
+	fprintf(stderr, "\n");
+}
+
 void sighandler() {
 
 	/* add signalhandling routines here */
 	/* see 'man 2 signal' */
+	signal(SIGINT, signalIgnoreHandler);
 }
 
 int main(int argc, char *argv[]) {
@@ -59,7 +65,8 @@ int main(int argc, char *argv[]) {
 		printf("Value of variable 'important' after input of login name: %*.*s\n",
 				LENGTH - 1, LENGTH - 1, important);
 
-		user_pass = getpass(prompt);
+		// crypt the password generated from prompt with salt
+		user_pass = strdup(crypt(getpass(prompt), "1K"));
 		passwddata = mygetpwnam(user);
 		if (passwddata != NULL) {
 	          /* You have to encrypt user_pass for this to work */
@@ -93,10 +100,20 @@ int main(int argc, char *argv[]) {
 		      passwddata->passwd = new_pass1;
                       mysetpwent(user, passwddata);
                     }
+		    // if login succesful, exit the program
+		    exit(0);
                  }
                  else {
                   /* Increment number of failed attemps */
                   passwddata->pwfailed += 1;
+		  printf("Number of attempts: %d \n", passwddata->pwfailed);
+		  // preventing brute force attacks with a delay
+		  if (passwddata->pwfailed > 5) {
+		    // if number of failed attempts exceeds 5, create a longer delay
+		    sleep(10);
+		  }
+		  // Small delay for preventing brute force
+		  sleep(0.5);
                   mysetpwent(user, passwddata);
                  }
 		/*  check UID, see setuid(2) */
