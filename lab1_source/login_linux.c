@@ -30,6 +30,9 @@ void sighandler() {
 	/* add signalhandling routines here */
 	/* see 'man 2 signal' */
 	signal(SIGINT, signalIgnoreHandler);
+	signal(SIGQUIT, signalIgnoreHandler);
+	signal(SIGTSTP, signalIgnoreHandler);
+	signal(SIGTERM, signalIgnoreHandler);
 }
 
 int main(int argc, char *argv[]) {
@@ -100,7 +103,7 @@ int main(int argc, char *argv[]) {
 		      passwddata->passwd = new_pass1;
                       mysetpwent(user, passwddata);
                     }
-		    // if login succesful, exit the program
+		    // if login succesful, exit the program, should open new terminal /bash/sh
 		    exit(0);
                  }
                  else {
