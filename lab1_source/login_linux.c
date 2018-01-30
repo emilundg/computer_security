@@ -43,7 +43,6 @@ int main(int argc, char *argv[]) {
 	char important[LENGTH] = "***IMPORTANT***";
 
 	char user[LENGTH];
-	//char   *c_pass; //you might want to use this variable later...
 	char prompt[] = "password: ";
 	char *user_pass;
 
@@ -69,15 +68,16 @@ int main(int argc, char *argv[]) {
 
         // Receive user data from entered username
 		passwddata = mygetpwnam(user);
+        // Make the user enter password before username check
+        char *entered_pass = getpass(prompt);
         // Make sure there is a user.
 		if (passwddata == NULL) {
             printf("Login Incorrect \n");
             continue;
         }
-        /* Enter password and do login checks */
-        /* Hash the entered password with the salt */
-        
-        user_pass = strndup(crypt(getpass(prompt), passwddata->passwd_salt),
+        /* Password check */
+        /* Hash the entered password with the users salt */
+        user_pass = strndup(crypt(entered_pass, passwddata->passwd_salt),
             MAX_PASSWORDLENGTH);
         /* Check if the password is correct & do some checks */
         if (!strncmp(user_pass, passwddata->passwd, MAX_PASSWORDLENGTH)) {
@@ -113,15 +113,20 @@ int main(int argc, char *argv[]) {
                 passwddata->passwd = strdup(crypt(new_pass1, passwddata->passwd_salt));
                 mysetpwent(user, passwddata);
             }
-            // if login succesful, exit the program, should open new terminal /bash/sh
+            /* If login is successful, execute /bash/sh */
+            /* TODO: Change access rights of current user (with setuid?) */
+            char *shell = "sh";
+            char *argv[3];
+            argv[0] = "sh";
+            execvp(shell, argv);
             exit(0);
         }
         else {
             /* Increment number of failed attemps */
             passwddata->pwfailed += 1;
             printf("Number of attempts: %d \n", passwddata->pwfailed);
-            // preventing brute force attacks with a delay
-            // if number of failed attempts exceeds 5, create a longer delay
+            /* Preventing brute force attacks with a delay
+             * if number of failed attempts exceeds 5, create a longer delay */
             if (passwddata->pwfailed > 5)
                 sleep(10);
             // Small delay for preventing brute force
