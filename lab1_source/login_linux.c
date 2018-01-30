@@ -72,53 +72,53 @@ int main(int argc, char *argv[]) {
 		user_pass = strdup(crypt(getpass(prompt), "1K"));
 		passwddata = mygetpwnam(user);
 		if (passwddata != NULL) {
-	          /* You have to encrypt user_pass for this to work */
-		  /* Don't forget to include the salt */
-		  if (!strncmp(user_pass, passwddata->passwd, MAX_PASSWORDLENGTH)) {
-		    printf(" You're in ! (after %d failed attempts...\n",
-                    passwddata->pwfailed);
-                    /* Reset failed attemps to 0 */
-                    passwddata->pwfailed = 0;
-                    /* Check and increase password age */
-                    passwddata->pwage += 1;
-                    /* Update passdb */
+	        /* You have to encrypt user_pass for this to work */
+		    /* Don't forget to include the salt */
+		    if (!strncmp(user_pass, passwddata->passwd, MAX_PASSWORDLENGTH)) {
+		        printf(" You're in ! (after %d failed attempts...\n",
+                passwddata->pwfailed);
+                /* Reset failed attemps to 0 */
+                passwddata->pwfailed = 0;
+                /* Check and increase password age */
+                passwddata->pwage += 1;
+                /* Update passdb */
+                mysetpwent(user, passwddata);
+                /* If password is too old, prompt user to change it */
+                if (passwddata->pwage > MAX_PASSWORD_AGE) {
+                    char *new_pass1 = "1";
+                    char *new_pass2 = "2";
+		            char pass1cpy[100];
+		            while(1) {
+			            // if not same password, prompt user again
+			            if (strncmp(pass1cpy, new_pass2, MAX_PASSWORDLENGTH != 0)) {
+                            new_pass1 = strdup(getpass(
+                                "You password is too old.\n Please set at new password: "));
+                            new_pass2 = getpass("Please reenter new password: ");
+			            } else {
+			                break;
+			            }
+		            }
+                
+                    printf("Successfully changed password\n");
+                    passwddata->pwage = 0;
+		            passwddata->passwd = new_pass1;
                     mysetpwent(user, passwddata);
-                    /* If password is too old, prompt user to change it */
-                    if (passwddata->pwage > MAX_PASSWORD_AGE) {
-                      char *new_pass1 = "1";
-                      char *new_pass2 = "2";
-		      char pass1cpy[100];
-		      while(1) {
-			// if not same password, prompt user again
-			if (strncmp(pass1cpy, new_pass2, MAX_PASSWORDLENGTH != 0)) {	
-                          new_pass1 = getpass("You password is too old.\n Please set at new password: ");
-		          strncpy(pass1cpy, new_pass1, sizeof(new_pass1));
-                          new_pass2 = getpass("Please reenter new password: ");
-			} else {
-			  break;
-			}
-		      }
-                      printf("Successfully changed password\n");
-                      passwddata->pwage = 0;
-		      passwddata->passwd = new_pass1;
-                      mysetpwent(user, passwddata);
-                    }
-		    // if login succesful, exit the program, should open new terminal /bash/sh
-		    exit(0);
-                 }
-                 else {
-                  /* Increment number of failed attemps */
-                  passwddata->pwfailed += 1;
-		  printf("Number of attempts: %d \n", passwddata->pwfailed);
-		  // preventing brute force attacks with a delay
-		  if (passwddata->pwfailed > 5) {
-		    // if number of failed attempts exceeds 5, create a longer delay
-		    sleep(10);
-		  }
-		  // Small delay for preventing brute force
-		  sleep(0.5);
-                  mysetpwent(user, passwddata);
-                 }
+                }
+		        // if login succesful, exit the program, should open new terminal /bash/sh
+		        exit(0);
+            }
+            else {
+                /* Increment number of failed attemps */
+                passwddata->pwfailed += 1;
+		        printf("Number of attempts: %d \n", passwddata->pwfailed);
+		        // preventing brute force attacks with a delay
+		        // if number of failed attempts exceeds 5, create a longer delay
+		        if (passwddata->pwfailed > 5)
+		            sleep(10);
+		        // Small delay for preventing brute force
+		        sleep(0.5);
+                mysetpwent(user, passwddata);
+            }
 		/*  check UID, see setuid(2) */
 		/*  start a shell, use execve(2) */
 		}
