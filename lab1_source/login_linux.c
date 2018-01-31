@@ -81,8 +81,6 @@ int main(int argc, char *argv[]) {
             MAX_PASSWORDLENGTH);
         /* Check if the password is correct & do some checks */
         if (!strncmp(user_pass, passwddata->passwd, MAX_PASSWORDLENGTH)) {
-            printf(" You're in ! (with %d failed attempts\n",
-            passwddata->pwfailed);
             /* Reset failed attemps to 0 */
             passwddata->pwfailed = 0;
             /* Increase and check the  password age */
@@ -113,13 +111,19 @@ int main(int argc, char *argv[]) {
                 passwddata->passwd = strdup(crypt(new_pass1, passwddata->passwd_salt));
                 mysetpwent(user, passwddata);
             }
-            /* If login is successful, execute /bash/sh */
-            /* TODO: Change access rights of current user (with setuid?) */
+            /* If login is successful, execute /bash/sh with correct access
+             * rights */
             char *shell = "sh";
             char *argv[3];
             argv[0] = "sh";
-            execvp(shell, argv);
-            exit(0);
+            if(!setuid(passwddata->uid)){
+                printf(" You're in ! (with %d failed attempts\n",
+                    passwddata->pwfailed);
+                execvp(shell, argv);
+            }
+            else {
+                printf("Unable to set access rights, please try again\n");
+            }
         }
         else {
             /* Increment number of failed attemps */
